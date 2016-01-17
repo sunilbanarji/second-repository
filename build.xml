@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+-<project basedir="." default="clean" name="projectName">
+
+<!-- ========== Initialize Properties =================================== -->
+
+
+<property name="ws.home" value="${basedir}"/>
+
+<property name="ws.jars" value="C:\Jars"/>
+
+<property name="test.dest" value="${ws.home}/build"/>
+
+<property name="test.src" value="${ws.home}/src"/>
+
+<property name="ng.result" value="test-output"/>
+
+<!-- ====== For setting the classpath ==== -->
+
+
+
+-<target name="setClassPath" unless="test.classpath">
+
+
+-<path id="classpath_jars">
+
+<fileset dir="${ws.jars}" includes="*.jar"/>
+
+</path>
+
+<pathconvert refid="classpath_jars" property="test.classpath" pathsep=":"/>
+
+</target>
+
+<!-- ============ Initializing other stuff =========== -->
+
+
+
+-<target name="init" depends="setClassPath">
+
+
+-<tstamp>
+
+<format property="start.time" pattern="MM-dd-yyyy (HH-mm-ss)"/>
+
+</tstamp>
+
+
+-<condition value="$(env.ANT_HOME)/bin/ant.bat" property="ANT" else="$(env.ANT_HOME)/bin/ant">
+
+<!-- os family="windows" /-->
+
+
+<os family="windows"/>
+
+</condition>
+
+<taskdef name="testng" classname="org.testng.TestNGAntTask" classpath="${test.classpath}"/>
+
+</target>
+
+<!-- -all- -->
+
+
+<target name="all"> </target>
+
+<!-- clean -->
+
+
+
+-<target name="clean">
+
+<delete dir="${test.dest}"/>
+
+</target>
+
+<!-- compile -->
+
+
+<!-- target for compiling the java files -->
+
+
+
+-<target name="compile" depends="init, clean">
+
+
+-<delete quiet="true" includeemptydirs="true">
+
+<fileset dir="${test.dest}" includes="**/*"/>
+
+</delete>
+
+<echo message="making directory....."/>
+
+<mkdir dir="${test.dest}"/>
+
+<echo message="classpath-------: ${test.classpath}"/>
+
+<echo message="compiling....."/>
+
+<javac classpath="${test.classpath}" srcdir="${test.src}" destdir="${test.dest}" debug="true"> </javac>
+
+</target>
+
+<!-- build -->
+
+
+<target name="build" depends="init"> </target>
+
+<!-- run -->
+
+
+
+-<target name="run" depends="compile">
+
+
+-<testng classpath="${test.classpath}:${test.dest}" outputDir="test-output" suitename="suite1">
+
+<xmlfileset dir="." includes="testng.xml"/>
+
+</testng>
+
+
+-<target name="usage">
+
+<echo> ant run will execute the test </echo>
+
+</target>
+
+
+-<path id="test.c">
+
+<fileset dir="${ws.jars}" includes="*.jar"/>
+
+</path>
+
+<!-- ========== Generating reports using Testng XSLT utility for single suite only ============== -->
+
+
+
+-<target name="makexsltreports" depends="run">
+
+<!-- TestngXslt report -->
+
+
+<mkdir dir="${ws.home}/XSLT_Reports/output"> </mkdir>
+
+<!-- to copy previous suite result to TestngXslt report folder -->
+
+
+
+-<xslt processor="SaxonLiaison" classpathref="test.c" out="${ws.home}/XSLT_Reports/output/index.html" style="src/xslt/testng-results.xsl" in="${ng.result}/testng-results.xml">
+
+<param name="testNgXslt.outputDir" expression="${ws.home}/XSLT_Reports/output/"/>
+
+<param name="testNgXslt.showRuntimeTotals" expression="true"/>
+
+<param name="testNgXslt.sortTestCaseLinks" expression="true"/>
+
+<param name="testNgXslt.testDetailsFilter" expression="FAIL,SKIP,PASS,CONF,BY_CLASS"/>
+
+</xslt>
+
+<!-- end of TestngXslt Report -->
+
+
+</target>
+
+</target>
+
+</project>
